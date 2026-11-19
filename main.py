@@ -79,7 +79,7 @@ MAX_SHARKS = 2
 MAX_WHIRLPOOLS = 2
 MAX_POWERUPS = 2
 MAX_CANNONBALLS = 20
-MAX_SHELLS = 8
+MAX_SHELLS = 14
 MAX_CLOUDS = 3
 MAX_MINES = 4
 MAX_SHOCKWAVES = 5
@@ -87,8 +87,13 @@ MAX_PUFFS = 90
 MAX_FLOAT_TEXTS = 24
 MAX_LEVEL = 5
 PRESTIGE_MAX = 25
-SHOP_PAGES = 3
-MAX_HOSTILE_MINES = 6
+SHOP_PAGES = 5                    # upgrades, abilities, prestige, mastery, vows
+MASTERY_MAX = 10                  # mastery ranks per upgrade (past its max level)
+SKILLPOINT_BASE_COST = 150        # coins for the first bought skill point...
+SKILLPOINT_GROWTH = 1.3           # ...every point bought makes the next one 30% dearer
+VOW_MAX_RANK = 3
+MAX_HOSTILE_MINES = 10
+MAX_HAZARDS = 14
 ADMIRAL_EVERY = 15                # a flagship also hunts you every N pirates sunk
 ISLAND_REWARD = 20
 TREASURE_BONUS = 30
@@ -136,7 +141,88 @@ ABILITIES = [
          desc="Drops a mine that blows up when enemies touch it"),
     dict(name="Turbo Toot", cost=40, cd=12, color="#6ec5ff",
          desc="A big shove plus a few seconds of turbo speed"),
+    # ---- the abilities below are never sold: pirates drop them ----
+    dict(name="Sleepy Gas", cost=0, cd=14, color="#b39ddb", drop=True,
+         desc="Slows every enemy nearby for several seconds"),
+    dict(name="Fart Barrage", cost=0, cd=12, color="#e6ee9c", drop=True,
+         desc="Fires a fan of six homing gas shells"),
+    dict(name="Healing Fumes", cost=0, cd=22, color="#80cbc4", drop=True,
+         desc="Heals the raft steadily for six seconds"),
+    dict(name="Gas Nuke", cost=0, cd=30, color="#ff5252", drop=True,
+         desc="A giant shockwave that blasts everything nearby"),
+    dict(name="Black Hole Burp", cost=0, cd=18, color="#7e57c2", drop=True,
+         desc="Drags enemies and loot towards the raft"),
+    dict(name="Phantom Toot", cost=0, cd=20, color="#e0e0e0", drop=True,
+         desc="Brief invulnerability plus a burst of speed"),
 ]
+BASE_ABILITY_COUNT = 8            # abilities sold in the shop (the rest are pirate drops)
+
+# Vows are dropped by pirates. Each one is a trade-off; equip a couple to build
+# a specialist. Finding a vow again raises its rank (stronger reward AND cost).
+VOWS = {
+    "glass": dict(name="Vow of Glass", good="+35% ability power", bad="-40% max hull"),
+    "frenzy": dict(name="Vow of Frenzy", good="+25% fart rate", bad="-25% fart push"),
+    "greed": dict(name="Vow of Greed", good="+40% coins & plunder", bad="+25% damage taken"),
+    "brute": dict(name="Vow of the Brute", good="+35% fart push", bad="-30% walk speed"),
+    "hermit": dict(name="Vow of the Hermit", good="-25% ability cooldowns",
+                   bad="coin pull range halved"),
+    "pain": dict(name="Vow of Pain", good="+50% coins & plunder",
+                 bad="pirates fire 30% faster"),
+    "stillness": dict(name="Vow of Stillness", good="-25% damage taken", bad="-25% top speed"),
+    "wisdom": dict(name="Vow of Wisdom", good="skill points come faster",
+                   bad="+20% ability cooldowns"),
+}
+VOW_IDS = list(VOWS)
+
+# ---- boss fights: unique bosses with 3 phases and telegraphed attacks ----
+BOSS_ATTACKS = {
+    "bombs": dict(wind=1.4, cd=5.0, color="#ff9f1c"),
+    "slam": dict(wind=1.2, cd=4.5, color="#3ddc84"),
+    "lightning": dict(wind=0.9, cd=4.0, color="#ffe66d"),
+    "summon": dict(wind=1.0, cd=9.0, color="#ffd23f"),
+    "sharks": dict(wind=1.0, cd=10.0, color="#7ae7ff"),
+    "broadside": dict(wind=1.1, cd=6.0, color="#ff6b6b"),
+    "gale": dict(wind=0.8, cd=11.0, color="#d9f1ff"),
+    "minefield": dict(wind=1.0, cd=8.0, color="#ff9f1c"),
+}
+BOSSES = {
+    "rustbeard": dict(
+        name="Captain Rustbeard", r=58, hp=220, speed=0.7, keep=(420, 320), shoots=True,
+        colors=("#2a0f1a", "#5a1f33", "#ffd23f"), relic="compass",
+        tip="He shoots volleys, then calls bombs and dinghies",
+        attacks=[[], ["bombs", "summon"], ["bombs", "broadside", "summon"]]),
+    "kraken": dict(
+        name="The Kraken", r=66, hp=240, speed=0.5, keep=(230, 150), shoots=False,
+        colors=("#0b2a1c", "#1f6b4a", "#9cffc8"), relic="ink",
+        tip="Tentacles slam where the green circles close - keep moving!",
+        attacks=[["slam"], ["slam", "sharks"], ["slam", "sharks", "slam"]]),
+    "storm": dict(
+        name="Storm Warden", r=54, hp=200, speed=0.9, keep=(460, 380), shoots=False,
+        colors=("#101a33", "#2f4a8a", "#ffe66d"), relic="pearl",
+        tip="Lightning strikes the yellow circles - and its gale drags you in",
+        attacks=[["lightning"], ["lightning", "gale"], ["lightning", "gale", "lightning"]]),
+    "queen": dict(
+        name="Mine Queen", r=54, hp=200, speed=0.7, keep=(400, 320), shoots=False,
+        colors=("#2a1608", "#a05a14", "#ff9f1c"), relic="crown",
+        tip="She rings you with mines - find the gap, then fight",
+        attacks=[["minefield"], ["minefield", "bombs"], ["minefield", "bombs", "summon"]]),
+    "leviathan": dict(
+        name="The Leviathan", r=72, hp=260, speed=0.55, keep=(300, 220), shoots=True,
+        colors=("#10081f", "#43237a", "#d6a8ff"), relic="scale",
+        tip="The final boss - it uses every attack you have seen",
+        attacks=[["slam", "lightning"], ["slam", "lightning", "bombs", "sharks"],
+                 ["slam", "lightning", "bombs", "minefield", "summon"]]),
+}
+BOSS_ROSTER = ["rustbeard", "kraken", "storm", "queen", "leviathan"]
+
+# Relics: a permanent reward for the first time each boss is beaten (per run).
+RELICS = {
+    "compass": dict(name="Rusty Compass", desc="+120 coin pull range"),
+    "ink": dict(name="Kraken Ink", desc="-10% damage taken"),
+    "pearl": dict(name="Storm Pearl", desc="-10% ability cooldowns"),
+    "crown": dict(name="Queen's Crown", desc="+20% coins & plunder"),
+    "scale": dict(name="Leviathan Scale", desc="+40 max hull"),
+}
 
 UPGRADES = [
     dict(id="power", name="Fart Power", base=20, desc="+15% push per fart"),
@@ -330,6 +416,8 @@ class Sounds:
 
 # --------------------------------------------------------------- objects ---
 class Raft:
+    regen = 0.0
+    regen_rate = 0.0
     def __init__(self):
         self.x = self.y = 0.0
         self.vx = self.vy = 0.0
@@ -366,6 +454,7 @@ class Raft:
         self.shield -= dt
         self.beans -= dt
         self.turbo -= dt
+        self.regen -= dt
 
     def damage(self, amount):
         if self.shield > 0 or self.invuln > 0:
@@ -478,13 +567,28 @@ class Whirlpool:
         self.spin = random.uniform(0, math.tau)
 
 
+class Hazard:
+    """A telegraphed strike zone: a ring closes, then it hits whatever is inside."""
+    def __init__(self, x, y, r, warn, dmg, kind):
+        self.x, self.y, self.r, self.dmg, self.kind = x, y, r, dmg, kind
+        self.warn = warn
+        self.t = warn
+
+
 class Pirate:
+    slow = 0.0
+    boss_id = None
+    phase = 0
+    boss_t = 0.0
+    shield_t = 0.0
+    age = 0.0
+    escaped = False
     def __init__(self, x, y, hp, kind="gun"):
         self.x, self.y = x, y
         self.vx = self.vy = 0.0
         self.hp = self.max_hp = hp
         self.kind = kind
-        self.r = {"gun": 34, "ram": 28, "boss": 58, "dinghy": 18}[kind]
+        self.r = {"gun": 34, "ram": 28, "boss": 58, "dinghy": 18, "galleon": 44}[kind]
         self.fire_t = random.uniform(1.5, 3.0)
         self.orbit = random.choice([-1, 1])
         self.hit_cd = 0.0
@@ -497,6 +601,7 @@ class Pirate:
 
 
 class Shark:
+    slow = 0.0
     def __init__(self, x, y, hp):
         self.x, self.y = x, y
         self.vx = self.vy = 0.0
@@ -592,11 +697,23 @@ class Game:
         self.running = True
         self.best = 0
         self.coins = self.score = self.kills = 0
+        self.hazards = []
+        self.bosses_beaten = set()
+        self.relics = set()
+        self.galleon_timer = 90.0
         self.plunder = 0
         self.pirate_kills = 0
         self.pending_boss = False
         self.seen_abil = set()
         self.hmines = []
+        self.mastery = {u["id"]: 0 for u in UPGRADES}
+        self.skill_points = self.sp_prog = self.sp_bought = 0
+        self.vow_rank = {}
+        self.vows_equipped = []
+        self.hazards = []
+        self.bosses_beaten = set()
+        self.relics = set()
+        self.galleon_timer = random.uniform(70, 110)
         self.run_time = 0.0
         self.leg_time = 0.0
         self.banner_text = ""
@@ -608,19 +725,34 @@ class Game:
     def lvl(self, key):
         return self.levels.get(key, 0)
 
+    def eff(self, key):
+        # shop upgrades count half a level per mastery rank on top of their level
+        return self.lvl(key) + 0.5 * self.mastery.get(key, 0)
+
+    def vf(self, vid):
+        # strength of an equipped vow (1.0 / 1.5 / 2.0 for rank 1 / 2 / 3), else 0
+        if vid not in self.vows_equipped:
+            return 0.0
+        return 1 + 0.5 * (self.vow_rank.get(vid, 1) - 1)
+
     def fart_power(self):
         mult = 1.8 if self.raft.beans > 0 else 1.0
-        return BASE_FART_POWER * (1 + 0.15 * self.lvl("power") + 0.05 * self.lvl("p_power")) * mult
+        v = 1 + 0.15 * self.eff("power") + 0.05 * self.lvl("p_power")
+        v *= (1 + 0.35 * self.vf("brute")) * max(0.4, 1 - 0.25 * self.vf("frenzy"))
+        return BASE_FART_POWER * v * mult
 
     def fart_cooldown(self):
         mult = 0.6 if self.raft.beans > 0 else 1.0
-        return BASE_FART_COOLDOWN * 0.9 ** self.lvl("recharge") * mult
+        return max(0.1, BASE_FART_COOLDOWN * 0.9 ** self.eff("recharge")
+                   * 0.8 ** self.vf("frenzy") * mult)
 
     def max_hull(self):
-        return BASE_HULL + 20 * self.lvl("hull") + 15 * self.lvl("p_hull")
+        base = BASE_HULL + 20 * self.eff("hull") + 15 * self.lvl("p_hull") \
+            + (40 if "scale" in self.relics else 0)
+        return base * max(0.4, 1 - 0.4 * self.vf("glass"))
 
     def drag_base(self):
-        d = min(0.93, BASE_DRAG + 0.035 * self.lvl("glide"))
+        d = min(0.93, BASE_DRAG + 0.035 * self.eff("glide"))
         if self.raft.turbo > 0:
             d = min(0.97, d + 0.12)
         return d
@@ -629,23 +761,131 @@ class Game:
         # Several AI crew mates fart in coordinated bursts; keep the raft
         # controllable as the AI crew gets larger.
         ai_count = getattr(self, "n_ai", 0)
-        s = (BASE_MAX_SPEED + 45 * self.lvl("speed") + 10 * self.lvl("p_speed")) * max(
+        s = (BASE_MAX_SPEED + 45 * self.eff("speed") + 10 * self.lvl("p_speed")) * max(
             0.68, 1.0 - 0.08 * max(0, ai_count - 1))
+        s *= max(0.5, 1 - 0.25 * self.vf("stillness"))
         if self.raft.turbo > 0:
             s *= 1.5
         return s
 
     def walk_speed(self):
-        return BASE_WALK_SPEED + 0.4 * self.lvl("walk") + 0.08 * self.lvl("p_walk")
+        return (BASE_WALK_SPEED + 0.4 * self.eff("walk") + 0.08 * self.lvl("p_walk")) \
+            * max(0.35, 1 - 0.3 * self.vf("brute"))
 
     def ability_power(self):
-        return 1 + 0.25 * self.lvl("abpower") + 0.08 * self.lvl("p_abpower")
+        return 1 + 0.25 * self.eff("abpower") + 0.08 * self.lvl("p_abpower") \
+            + 0.35 * self.vf("glass")
 
     def ability_cd_mult(self):
-        return 0.9 ** self.lvl("abcd")
+        return max(0.2, 0.9 ** self.eff("abcd") * max(0.4, 1 - 0.25 * self.vf("hermit"))
+                   * (1 + 0.2 * self.vf("wisdom")) * (0.9 if "pearl" in self.relics else 1.0))
 
     def magnet_range(self):
-        return 40 + 70 * self.lvl("magnet") + 25 * self.lvl("p_magnet")
+        return (40 + 70 * self.eff("magnet") + 25 * self.lvl("p_magnet")
+                + (120 if "compass" in self.relics else 0)) \
+            * max(0.0, 1 - 0.5 * self.vf("hermit"))
+
+    def damage_taken_mult(self):
+        return (1 + 0.25 * self.vf("greed")) * max(0.4, 1 - 0.25 * self.vf("stillness")) \
+            * (0.9 if "ink" in self.relics else 1.0)
+
+    def pirate_fire_mult(self):
+        return max(0.45, 1 - 0.3 * self.vf("pain"))
+
+    # ---- skill points: earned by sinking pirates, or bought at a rising price ----
+    def sp_cost(self):
+        return int(SKILLPOINT_BASE_COST * SKILLPOINT_GROWTH ** self.sp_bought)
+
+    def kills_per_point(self):
+        return max(2, int(round(6 * max(0.4, 1 - 0.3 * self.vf("wisdom")))))
+
+    def gain_kill_progress(self, amount, x, y):
+        self.sp_prog += amount
+        kpp = self.kills_per_point()
+        while self.sp_prog >= kpp:
+            self.sp_prog -= kpp
+            self.skill_points += 1
+            self.float_text(x, y - 70, "+1 SKILL POINT", col("#ffd23f"))
+
+    def buy_skill_point(self):
+        cost = self.sp_cost()
+        if self.coins < cost:
+            self.shop_msg = f"A skill point costs {cost} coins"
+            return
+        self.coins -= cost
+        self.sp_bought += 1
+        self.skill_points += 1
+        self.shop_msg = f"Bought a skill point! The next one costs {self.sp_cost()} coins"
+        self.snd.play("buy")
+
+    def mastery_cost(self, uid):
+        return 1 + self.mastery.get(uid, 0) // 3
+
+    def buy_mastery(self, idx):
+        if idx >= len(UPGRADES):
+            return
+        u = UPGRADES[idx]
+        uid = u["id"]
+        if self.lvl(uid) < MAX_LEVEL:
+            self.shop_msg = f"Max out {u['name']} first to unlock its mastery"
+        elif self.mastery[uid] >= MASTERY_MAX:
+            self.shop_msg = f"{u['name']} mastery is maxed"
+        elif self.skill_points < self.mastery_cost(uid):
+            self.shop_msg = "Not enough skill points"
+        else:
+            self.skill_points -= self.mastery_cost(uid)
+            self.mastery[uid] += 1
+            self.shop_msg = f"{u['name']} mastery rank {self.mastery[uid]}!"
+            self.snd.play("buy")
+
+    # ---- vows ----
+    def vow_slots(self):
+        return 2 + (1 if self.prestige_unlocked() else 0)
+
+    def toggle_vow(self, idx):
+        if idx >= len(VOW_IDS):
+            return
+        vid = VOW_IDS[idx]
+        name = VOWS[vid]["name"]
+        if self.vow_rank.get(vid, 0) <= 0:
+            self.shop_msg = "You haven't found that vow yet - pirates drop them"
+        elif vid in self.vows_equipped:
+            self.vows_equipped.remove(vid)
+            self.shop_msg = f"{name} removed"
+            self.click()
+        elif len(self.vows_equipped) >= self.vow_slots():
+            self.shop_msg = "No free vow slot - remove one first"
+        else:
+            self.vows_equipped.append(vid)
+            self.shop_msg = f"{name} sworn!"
+            self.snd.play("buy")
+        self.raft.hull = min(self.raft.hull, self.max_hull())
+
+    def roll_loot(self, pr):
+        boss = pr.kind == "boss"
+        if random.random() < (1.0 if boss else 0.10):
+            options = [v for v in VOW_IDS if self.vow_rank.get(v, 0) < VOW_MAX_RANK]
+            if options:
+                v = random.choice(options)
+                self.vow_rank[v] = self.vow_rank.get(v, 0) + 1
+                rank = self.vow_rank[v]
+                text = f"VOW FOUND: {VOWS[v]['name']}!" if rank == 1 \
+                    else f"{VOWS[v]['name']} is now rank {rank}!"
+                self.announce(text + "  (equip it in the shop)", 4.0)
+                self.float_text(pr.x, pr.y - 95, text, col("#ffd23f"))
+                self.snd.play("powerup")
+            else:
+                self.plunder += 10
+        if random.random() < (0.6 if boss else 0.06):
+            options = [i for i in range(BASE_ABILITY_COUNT, len(ABILITIES))
+                       if i not in self.owned]
+            if options:
+                i = random.choice(options)
+                self.owned.add(i)
+                text = f"NEW ABILITY: {ABILITIES[i]['name']}!"
+                self.announce(text + "  (equip it in the shop)", 4.0)
+                self.float_text(pr.x, pr.y - 120, text, col(ABILITIES[i]["color"]))
+                self.snd.play("powerup")
 
     def max_pirates(self):
         return min(MAX_PIRATES, 1 + self.score // 2 + self.pirate_kills // 12)
@@ -660,7 +900,8 @@ class Game:
         return all(self.lvl(u["id"]) >= MAX_LEVEL for u in UPGRADES)
 
     def coin_mult(self):
-        return 1 + 0.05 * self.lvl("p_bounty")
+        return 1 + 0.05 * self.lvl("p_bounty") + 0.4 * self.vf("greed") \
+            + 0.5 * self.vf("pain") + (0.2 if "crown" in self.relics else 0)
 
     def plunder_roll(self, base):
         v = base * self.coin_mult()
@@ -688,6 +929,14 @@ class Game:
         self.pirate_kills = 0
         self.pending_boss = False
         self.seen_abil = set()
+        self.mastery = {u["id"]: 0 for u in UPGRADES}
+        self.skill_points = self.sp_prog = self.sp_bought = 0
+        self.vow_rank = {}
+        self.vows_equipped = []
+        self.hazards = []
+        self.bosses_beaten = set()
+        self.relics = set()
+        self.galleon_timer = random.uniform(70, 110)
         self.run_time = 0.0
         self.leg_time = 0.0
         n = self.n_players
@@ -702,6 +951,7 @@ class Game:
         self.pirates, self.cannonballs, self.shells = [], [], []
         self.sharks, self.mines, self.whirls, self.powerups = [], [], [], []
         self.hmines = []
+        self.hazards = []
         self.clouds, self.shockwaves = [], []
         self.pirate_timer = 15.0
         self.shark_timer = 20.0
@@ -798,7 +1048,7 @@ class Game:
 
     def pirate_abilities_for(self, kind):
         k = self.pirate_kills
-        if k < 6 or kind in ("ram", "dinghy"):
+        if k < 6 or kind in ("ram", "dinghy", "boss", "galleon"):
             return []
         pool = [n for n, a in PIRATE_ABILITIES.items() if a["unlock"] <= k]
         if k < 14:
@@ -807,13 +1057,14 @@ class Game:
             count = random.choice((1, 2))
         else:
             count = 2
-        if kind == "boss":
-            count += 1
         return random.sample(pool, min(count, len(pool), 3))
 
     def spawn_pirate(self, kind=None):
-        # A flagship can replace a regular pirate, but never exceed the cap.
-        if len(self.pirates) >= MAX_PIRATES:
+        if kind == "boss" and any(p.kind == "boss" for p in self.pirates):
+            return
+        # A boss can replace a regular pirate, but never exceed the cap.
+        if sum(1 for p in self.pirates
+               if p.kind not in ("dinghy", "galleon")) >= MAX_PIRATES:
             if kind == "boss":
                 regulars = [p for p in self.pirates if p.kind not in ("boss", "dinghy")]
                 if not regulars:
@@ -828,8 +1079,11 @@ class Game:
             kind = "ram" if self.score >= 3 and random.random() < 0.3 else "gun"
         mult = PIRATE_HP_MULT[self.settings["difficulty"]]
         # Hard HP caps: pirates never become unkillable, whatever you have sunk.
+        boss_id = None
         if kind == "boss":
-            hp = min(220, 150 + 15 * self.score) * mult
+            boss_id = self.next_boss_id()
+            b = BOSSES[boss_id]
+            hp = min(b["hp"], b["hp"] * 0.6 + 12 * self.score) * mult
         elif kind == "ram":
             hp = min(70, 28 + 4 * self.score) * mult
         else:
@@ -839,6 +1093,11 @@ class Game:
         pr.abil = self.pirate_abilities_for(kind)
         pr.cd = {n: random.uniform(3.0, 6.0) for n in pr.abil}
         pr.face = ang + math.pi
+        if boss_id:
+            pr.boss_id = boss_id
+            pr.r = BOSSES[boss_id]["r"]
+            pr.boss_t = 4.0
+            self.announce(f"BOSS: {BOSSES[boss_id]['name']} - {BOSSES[boss_id]['tip']}", 5.0)
         self.pirates.append(pr)
         for n in pr.abil:
             if n not in self.seen_abil:
@@ -942,10 +1201,10 @@ class Game:
             for i in range(min(NUM_CREW, self.n_players + self.n_ai)):
                 d = PLAYER_DEFS[i]
                 if key == d["left"]:
-                    self.ability_choice[i] = (self.ability_choice[i] - 1) % len(ABILITIES)
+                    self.ability_choice[i] = (self.ability_choice[i] - 1) % BASE_ABILITY_COUNT
                     self.click()
                 elif key == d["right"]:
-                    self.ability_choice[i] = (self.ability_choice[i] + 1) % len(ABILITIES)
+                    self.ability_choice[i] = (self.ability_choice[i] + 1) % BASE_ABILITY_COUNT
                     self.click()
             if key in ("return", "space"):
                 self.new_run()
@@ -982,9 +1241,17 @@ class Game:
                         self.equip(pl, -1)
                     elif key == pl.k["right"]:
                         self.equip(pl, 1)
-            else:
+            elif self.shop_page == 2:
                 if len(key) == 1 and key in "1234567":
                     self.buy_prestige(int(key) - 1)
+            elif self.shop_page == 3:
+                if len(key) == 1 and key in "123456789":
+                    self.buy_mastery(int(key) - 1)
+                elif key == "b":
+                    self.buy_skill_point()
+            else:
+                if len(key) == 1 and key in "12345678":
+                    self.toggle_vow(int(key) - 1)
         elif self.state == "pause_menu":
             if key in ("1", "escape"):
                 self.state = "play"
@@ -1012,6 +1279,7 @@ class Game:
                 if not st["pirates"] and self.settings_return == "pause_menu":
                     self.pirates, self.cannonballs, self.sharks = [], [], []
                     self.hmines = []
+                    self.hazards = []
             elif key == "4":
                 st["hints"] = not st["hints"]
             elif key == "5":
@@ -1141,7 +1409,18 @@ class Game:
                     break
                 popts.sort(key=lambda i: self.lvl(PRESTIGE[i]["id"]))
                 self.buy_prestige(popts[0])
-        new = [i for i, a in enumerate(ABILITIES)
+        for _ in range(60):
+            mopts = [i for i, u in enumerate(UPGRADES)
+                     if self.lvl(u["id"]) >= MAX_LEVEL
+                     and self.mastery[u["id"]] < MASTERY_MAX
+                     and self.skill_points >= self.mastery_cost(u["id"])]
+            if not mopts:
+                break
+            mopts.sort(key=lambda i: self.mastery[UPGRADES[i]["id"]])
+            self.buy_mastery(mopts[0])
+        if self.prestige_unlocked() and self.coins >= self.sp_cost():
+            self.buy_skill_point()
+        new = [i for i, a in enumerate(ABILITIES[:BASE_ABILITY_COUNT])
                if i not in self.owned and self.coins >= a["cost"]]
         if new:
             self.buy_ability(random.choice(new))
@@ -1164,6 +1443,7 @@ class Game:
 
     def hurt_raft(self, amount):
         r = self.raft
+        amount *= self.damage_taken_mult()
         # Any crew member can time a half-second block to negate an incoming hit.
         blockers = [p for p in self.players if p.block_timer > 0]
         if blockers:
@@ -1182,6 +1462,9 @@ class Game:
         return False
 
     def hit_enemy(self, e, dmg, color=GOLD):
+        if getattr(e, "shield_t", 0) > 0:
+            self.float_text(e.x, e.y - 45, "immune", col("#cccccc"))
+            return
         e.hp -= dmg
         self.float_text(e.x, e.y - 45, f"-{int(dmg)}", color)
 
@@ -1267,6 +1550,69 @@ class Game:
                 self.puffs.append(Puff(wx, wy, nx, ny, 0.9, True))
             self.snd.play("mega", 0.6)
             self.add_shake(6)
+        elif a == 8:    # Sleepy Gas (pirate drop)
+            p.word = "ZZZZ..."
+            dur = 5.0 * math.sqrt(pm)
+            for e in self.enemies():
+                if math.hypot(e.x - r.x, e.y - r.y) < 520:
+                    e.slow = max(e.slow, dur)
+                    self.float_text(e.x, e.y - 45, "sleepy", col("#b39ddb"))
+            for _ in range(14):
+                self.puffs.append(Puff(wx, wy, nx, ny, 0.7, True))
+            self.snd.play("fart2", 0.9)
+        elif a == 9:    # Fart Barrage (pirate drop)
+            p.word = "BARRAGE!"
+            base = math.atan2(ny, nx)
+            for k in range(6):
+                if len(self.shells) >= MAX_SHELLS:
+                    break
+                ang = base + (k - 2.5) * 0.35
+                self.shells.append(Shell(wx, wy, math.cos(ang) * 420, math.sin(ang) * 420,
+                                         18 * pm))
+            r.push(nx, ny, self.fart_power() * 1.2, self.max_speed())
+            for _ in range(10):
+                self.puffs.append(Puff(wx, wy, nx, ny, 0.8, True))
+            self.snd.play("boom", 0.8)
+        elif a == 10:   # Healing Fumes (pirate drop)
+            p.word = "AAAH..."
+            r.regen = max(r.regen, 6.0)
+            r.regen_rate = 4.0 * pm
+            self.float_text(r.x, r.y - 30, "healing fumes", col("#80cbc4"))
+            self.snd.play("heal")
+        elif a == 11:   # Gas Nuke (pirate drop)
+            p.word = "KABOOOM!"
+            while len(self.shockwaves) >= MAX_SHOCKWAVES:
+                self.shockwaves.pop(0)
+            self.shockwaves.append(Shockwave(r.x, r.y, 650 * math.sqrt(pm), 90 * pm))
+            for _ in range(28):
+                a2 = random.uniform(0, math.tau)
+                self.puffs.append(Puff(r.x + math.cos(a2) * r.radius,
+                                       r.y + math.sin(a2) * r.radius,
+                                       math.cos(a2), math.sin(a2), 0.9, True))
+            self.snd.play("mega", 1.0)
+            self.add_shake(16)
+        elif a == 12:   # Black Hole Burp (pirate drop)
+            p.word = "BUUURP!"
+            for e in self.enemies():
+                dd = math.hypot(r.x - e.x, r.y - e.y) or 1
+                if dd < 700:
+                    e.vx += (r.x - e.x) / dd * 380
+                    e.vy += (r.y - e.y) / dd * 380
+            for c in self.coin_items + self.powerups:
+                if math.hypot(c.x - r.x, c.y - r.y) < 900:
+                    c.pull = 3.0
+            for _ in range(12):
+                self.puffs.append(Puff(wx, wy, nx, ny, 0.6, True))
+            self.snd.play("vac")
+            self.add_shake(5)
+        elif a == 13:   # Phantom Toot (pirate drop)
+            p.word = "BOO!"
+            r.invuln = max(r.invuln, 2.5 * pm)
+            r.turbo = max(r.turbo, 2.5)
+            r.push(nx, ny, self.fart_power() * 1.2, self.max_speed())
+            for _ in range(12):
+                self.puffs.append(Puff(wx, wy, nx, ny, 0.9, True))
+            self.snd.play("shield")
 
     # ---------- AI crew ----------
     def ai_navigate(self):
@@ -1318,6 +1664,14 @@ class Game:
                 w = (reach - od) / reach
                 vx += ox / od * w * 2.0
                 vy += oy / od * w * 2.0
+        for hz in self.hazards:
+            ox, oy = r.x - hz.x, r.y - hz.y
+            od = math.hypot(ox, oy) or 1
+            reach = hz.r + r.radius + 90
+            if od < reach:
+                w = (reach - od) / reach
+                vx += ox / od * w * 3.0
+                vy += oy / od * w * 3.0
         # lean against the wind a little
         vx -= math.cos(self.wind_ang) * self.wind_str / 90
         vy -= math.sin(self.wind_ang) * self.wind_str / 90
@@ -1374,6 +1728,22 @@ class Game:
         elif a == 7:
             use = math.hypot(self.island.x - r.x, self.island.y - r.y) > 600 \
                 and r.turbo <= 0
+        elif a == 8:
+            use = ed < 450
+        elif a == 9:
+            use = ed < 800
+        elif a == 10:
+            use = r.hull < self.max_hull() * 0.65 and r.regen <= 0
+        elif a == 11:
+            use = sum(1 for e in self.enemies()
+                      if math.hypot(e.x - r.x, e.y - r.y) < 500) >= 2 or ed < 200
+        elif a == 12:
+            use = sum(1 for e in self.enemies()
+                      if math.hypot(e.x - r.x, e.y - r.y) < 650) >= 2
+        elif a == 13:
+            use = r.invuln <= 0 and (
+                any(math.hypot(cb.x - r.x, cb.y - r.y) < 170 for cb in self.cannonballs)
+                or (r.hull < self.max_hull() * 0.35 and ed < 300))
         if use and r.shield <= 0 or (use and a != 4):
             self.use_ability(p)
 
@@ -1511,6 +1881,8 @@ class Game:
         self.update_sharks(dt)
         self.update_projectiles(dt)
         self.update_hmines(dt)
+        self.update_hazards(dt)
+        self.update_regen(dt)
         self.update_mines(dt)
         self.update_coins(dt)
 
@@ -1537,7 +1909,7 @@ class Game:
         # Final per-frame limits also cover bursts of loot and visual effects.
         limits = (
             (self.pirates, MAX_PIRATES + 4), (self.sharks, MAX_SHARKS),
-            (self.hmines, MAX_HOSTILE_MINES),
+            (self.hmines, MAX_HOSTILE_MINES), (self.hazards, MAX_HAZARDS),
             (self.whirls, MAX_WHIRLPOOLS), (self.obstacles, OBSTACLE_COUNT),
             (self.powerups, MAX_POWERUPS),
             (self.cannonballs, MAX_CANNONBALLS), (self.shells, MAX_SHELLS),
@@ -1582,7 +1954,6 @@ class Game:
         self.keys.clear()
         if self.settings["pirates"] and self.score % BOSS_EVERY == 0:
             self.spawn_pirate("boss")
-            self.announce("WARNING: PIRATE FLAGSHIP!", 4.0)
             self.snd.play("horn")
         self.state = "shop"
         if self.n_players == 0:
@@ -1610,14 +1981,21 @@ class Game:
         r = self.raft
         self.pirate_timer -= dt
         if self.pirate_timer <= 0:
-            if self.settings["pirates"] and len(self.pirates) < self.max_pirates():
+            if self.settings["pirates"] and sum(
+                    1 for p in self.pirates
+                    if p.kind not in ("dinghy", "galleon")) < self.max_pirates():
                 self.spawn_pirate()
             self.pirate_timer = max(7.0, random.uniform(10, 16) - 0.1 * self.pirate_kills)
+        self.galleon_timer -= dt
+        if self.galleon_timer <= 0:
+            self.galleon_timer = random.uniform(100, 160)
+            if self.settings["pirates"] and self.score >= 2 \
+                    and not any(p.kind == "galleon" for p in self.pirates):
+                self.spawn_galleon()
         if self.pending_boss and self.settings["pirates"] \
                 and not any(p.kind == "boss" for p in self.pirates):
             self.pending_boss = False
             self.spawn_pirate("boss")
-            self.announce("THE ADMIRAL'S FLAGSHIP IS HUNTING YOU!", 4.0)
             self.snd.play("horn")
 
         speed = min(140, 85 + 3 * self.score)
@@ -1625,17 +2003,32 @@ class Game:
         for pr in self.pirates:
             pr.hit_cd -= dt
             pr.heal_t -= dt
+            pr.slow -= dt
+            pr.shield_t -= dt
+            sdt = dt * (0.35 if pr.slow > 0 else 1.0)
             dx, dy = r.x - pr.x, r.y - pr.y
             d = math.hypot(dx, dy) or 1
             ux, uy = dx / d, dy / d
             rammer = pr.kind in ("ram", "dinghy")
-            if rammer:
+            if pr.kind == "galleon":
+                pr.age += dt
+                if pr.age > 45 or d > 1700:
+                    pr.escaped = True
+                    self.announce("The treasure galleon got away!", 2.5)
+                a = math.atan2(-dy, -dx) + math.sin(self.frame * 0.03 + pr.orbit * 3) * 0.6
+                tvx, tvy = math.cos(a) * speed * 0.8, math.sin(a) * speed * 0.8
+            elif rammer:
                 sway = math.sin(self.frame * 0.04 + pr.orbit * 3) * 0.45 * min(1.0, d / 450)
                 a = math.atan2(dy, dx) + sway
                 tvx, tvy = math.cos(a) * speed * 1.5, math.sin(a) * speed * 1.5
             else:
-                spd = speed * (0.7 if pr.kind == "boss" else 1.0)
-                far, near = (420, 320) if pr.kind == "boss" else (300, 220)
+                if pr.kind == "boss":
+                    bs = BOSSES[pr.boss_id]
+                    spd = speed * bs["speed"]
+                    far, near = bs["keep"]
+                else:
+                    spd = speed
+                    far, near = 300, 220
                 if d > far:
                     tvx, tvy = ux * spd, uy * spd
                 elif d < near:
@@ -1643,25 +2036,29 @@ class Game:
                 else:
                     tvx = -uy * pr.orbit * 60
                     tvy = ux * pr.orbit * 60
-            pr.vx += (tvx - pr.vx) * 2 * dt
-            pr.vy += (tvy - pr.vy) * 2 * dt
-            pr.x += pr.vx * dt
-            pr.y += pr.vy * dt
+            pr.vx += (tvx - pr.vx) * 2 * sdt
+            pr.vy += (tvy - pr.vy) * 2 * sdt
+            pr.x += pr.vx * sdt
+            pr.y += pr.vy * sdt
             if "bulwark" in pr.abil:
                 # the shield turns slowly, so you can get round the side of it
                 turn = angle_diff(pr.face, math.atan2(dy, dx))
                 pr.face += max(-1.2 * dt, min(1.2 * dt, turn))
-            self.update_pirate_abilities(pr, dt, d)
+            if pr.boss_id:
+                self.update_boss(pr, sdt, d)
+            else:
+                self.update_pirate_abilities(pr, sdt, d)
 
-            pr.fire_t -= dt
-            if not rammer and pr.fire_t <= 0 and d < 650 and pr.charging is None:
+            pr.fire_t -= sdt
+            if not rammer and self.pirate_shoots(pr) and pr.fire_t <= 0 and d < 650 \
+                    and pr.charging is None:
                 base = math.atan2(dy, dx)
                 if pr.kind == "boss":
                     shots, dmg = (-0.22, 0.0, 0.22), 8
-                    pr.fire_t = random.uniform(2.0, 3.0)
+                    pr.fire_t = random.uniform(2.0, 3.0) * self.pirate_fire_mult()
                 else:
                     shots, dmg = (random.uniform(-0.08, 0.08),), 10
-                    pr.fire_t = random.uniform(2.5, 4.0)
+                    pr.fire_t = random.uniform(2.5, 4.0) * self.pirate_fire_mult()
                 for off in shots:
                     if len(self.cannonballs) >= MAX_CANNONBALLS:
                         break
@@ -1689,26 +2086,34 @@ class Game:
                         self.hit_enemy(pr, dmg)
                         self.add_shake(5)
                         self.snd.play("hit", 0.7)
-                        self.hurt_raft({"gun": 6, "ram": 14, "boss": 10,
-                                        "dinghy": 4}[pr.kind] * dmult)
+                        rd = {"gun": 6, "ram": 14, "boss": 10, "dinghy": 4,
+                              "galleon": 0}[pr.kind] * dmult
+                        if rd > 0:
+                            self.hurt_raft(rd)
 
         alive, spawned = [], []
         for pr in self.pirates:
+            if pr.escaped:
+                continue
             if pr.hp > 0:
                 alive.append(pr)
                 continue
             self.kills += 1
-            if pr.kind != "dinghy":
+            if pr.kind not in ("dinghy", "galleon"):
                 self.pirate_kills += 1
+                self.gain_kill_progress(3 if pr.kind == 'boss' else 1, pr.x, pr.y)
                 if self.pirate_kills % ADMIRAL_EVERY == 0:
                     self.pending_boss = True
                 if self.pirate_kills in (6, 14, 30):
                     self.announce("The pirates have learned new tricks!", 3.5)
             if pr.kind == "boss":
-                bounty, plunder = 80 + 5 * self.score, 25
+                bounty, plunder = 120 + 8 * self.score, 40
                 if len(self.powerups) < MAX_POWERUPS:
                     self.powerups.append(Powerup(pr.x, pr.y, "crate"))
-                self.announce("FLAGSHIP SUNK!", 3.0)
+                self.boss_defeated(pr)
+            elif pr.kind == "galleon":
+                bounty, plunder = 70 + 6 * self.score, 15
+                self.announce("TREASURE GALLEON SUNK!", 3.0)
             elif pr.kind == "ram":
                 bounty, plunder = 12 + 2 * self.score, 4
             elif pr.kind == "dinghy":
@@ -1721,13 +2126,15 @@ class Game:
             self.plunder += gain
             self.float_text(pr.x, pr.y - 25, f"+{bounty} bounty", GOLD)
             self.float_text(pr.x, pr.y + 22, f"+{gain} plunder", col("#ffb86b"))
-            drop_count = 10 if pr.kind == "boss" else (1 if pr.kind == "dinghy"
-                                                       else random.randint(3, 5))
+            drop_count = {"boss": 16, "galleon": 14, "dinghy": 1}.get(
+                pr.kind, random.randint(3, 5))
             # Enemy bounty coins are loot, not ambient spawns: never discard
             # them just because several enemies were defeated together.
             for _ in range(drop_count):
                 self.coin_items.append(Coin(pr.x + random.uniform(-40, 40),
                                             pr.y + random.uniform(-40, 40), 5))
+            if pr.kind != "dinghy":
+                self.roll_loot(pr)
             if "splitter" in pr.abil:
                 hp = 14 * PIRATE_HP_MULT[self.settings["difficulty"]]
                 for sgn in (-1, 1):
@@ -1761,7 +2168,7 @@ class Game:
             if not self.pirate_ready(pr, name, d):
                 pr.cd[name] = 0.4
                 continue
-            pr.cd[name] = spec["cd"] * random.uniform(0.9, 1.25)
+            pr.cd[name] = spec["cd"] * random.uniform(0.9, 1.25) * self.pirate_fire_mult()
             pr.charging = [name, spec["wind"], spec["wind"]]
             break
 
@@ -1830,6 +2237,170 @@ class Game:
                 self.float_text(pr.x, pr.y - 50, "shark!", col("#7ae7ff"))
                 self.snd.play("bite", 0.5)
 
+    def tell_color(self, name):
+        return (PIRATE_ABILITIES.get(name) or BOSS_ATTACKS[name])["color"]
+
+    def pirate_shoots(self, pr):
+        if pr.kind == "galleon":
+            return False
+        if pr.kind == "boss":
+            return BOSSES[pr.boss_id]["shoots"]
+        return True
+
+    def next_boss_id(self):
+        for b in BOSS_ROSTER:
+            if b not in self.bosses_beaten:
+                return b
+        return random.choice(BOSS_ROSTER)       # everything beaten: bosses come back
+
+    def spawn_galleon(self):
+        ang = random.uniform(0, math.tau)
+        mult = PIRATE_HP_MULT[self.settings["difficulty"]]
+        self.pirates.append(Pirate(self.raft.x + math.cos(ang) * 700,
+                                   self.raft.y + math.sin(ang) * 700, 90 * mult, "galleon"))
+        self.announce("A TREASURE GALLEON! Sink it before it escapes!", 4.0)
+        self.snd.play("horn", 0.7)
+
+    def add_hazard(self, x, y, r, warn, dmg, kind):
+        if len(self.hazards) < MAX_HAZARDS:
+            self.hazards.append(Hazard(x, y, r, warn, dmg, kind))
+
+    def boss_defeated(self, pr):
+        spec = BOSSES[pr.boss_id]
+        self.bosses_beaten.add(pr.boss_id)
+        self.hazards = []
+        relic = spec["relic"]
+        if relic not in self.relics:
+            self.relics.add(relic)
+            self.announce(f"{spec['name']} DEFEATED!  Relic: {RELICS[relic]['name']} "
+                          f"({RELICS[relic]['desc']})", 5.0)
+        else:
+            self.skill_points += 2
+            self.announce(f"{spec['name']} DEFEATED!  +2 skill points", 4.0)
+        if len(self.bosses_beaten) == len(BOSS_ROSTER) and not getattr(self, "_all_bosses", False):
+            self._all_bosses = True
+            self.float_text(pr.x, pr.y - 120, "ALL BOSSES DEFEATED!", GOLD)
+
+    def update_boss(self, pr, dt, d):
+        spec = BOSSES[pr.boss_id]
+        frac = pr.hp / pr.max_hp
+        phase = 0 if frac > 0.66 else 1 if frac > 0.33 else 2
+        if phase > pr.phase:
+            pr.phase = phase
+            pr.shield_t = 1.5
+            pr.charging = None
+            pr.boss_t = 1.5
+            self.cannonballs = []
+            self.hazards = []
+            self.announce(f"{spec['name']} - phase {phase + 1}!", 3.0)
+            self.float_text(pr.x, pr.y - pr.r - 60, "ENRAGED!", col("#ff6b6b"))
+            self.snd.play("horn")
+            self.add_shake(10)
+        if pr.charging:
+            pr.charging[1] -= dt
+            if pr.charging[1] <= 0:
+                name = pr.charging[0]
+                pr.charging = None
+                self.fire_boss_attack(pr, name)
+            return
+        pr.boss_t -= dt
+        if pr.boss_t > 0:
+            return
+        pool = spec["attacks"][pr.phase]
+        if not pool:
+            pr.boss_t = 3.0
+            return
+        name = random.choice(pool)
+        if name == "summon" and len(self.pirates) >= MAX_PIRATES + 2:
+            name = pool[0] if pool[0] != "summon" else "bombs"
+        if name == "sharks" and len(self.sharks) >= MAX_SHARKS:
+            name = "slam"
+        a = BOSS_ATTACKS[name]
+        pr.charging = [name, a["wind"], a["wind"]]
+        pr.boss_t = a["cd"] * (1 - 0.15 * pr.phase) * self.pirate_fire_mult()
+
+    def fire_boss_attack(self, pr, name):
+        r = self.raft
+        ph = pr.phase
+        if name == "bombs":
+            for k in range(3 + ph):
+                a = random.uniform(0, math.tau)
+                dist = 0 if k == 0 else random.uniform(80, 240)
+                lead = 0.9 if k == 0 else 0.0
+                self.add_hazard(r.x + r.vx * lead + math.cos(a) * dist,
+                                r.y + r.vy * lead + math.sin(a) * dist, 80, 1.4, 18, "bomb")
+            self.snd.play("boom", 0.6)
+        elif name == "slam":
+            for k in range(3 + ph):
+                a = k * math.tau / (3 + ph) + random.uniform(0, 1)
+                dist = 0 if k == 0 else 160
+                lead = 0.8 if k == 0 else 0.0
+                self.add_hazard(r.x + r.vx * lead + math.cos(a) * dist,
+                                r.y + r.vy * lead + math.sin(a) * dist, 95, 1.3, 20, "slam")
+            self.snd.play("bite", 0.6)
+            self.add_shake(4)
+        elif name == "lightning":
+            for k in range(3 + 2 * ph):
+                if k == 0:
+                    x, y = r.x + r.vx * 0.8, r.y + r.vy * 0.8
+                else:
+                    a, dist = random.uniform(0, math.tau), random.uniform(60, 300)
+                    x, y = r.x + math.cos(a) * dist, r.y + math.sin(a) * dist
+                self.add_hazard(x, y, 65, 0.9 + 0.08 * k, 16, "lightning")
+            self.snd.play("mega", 0.4)
+        elif name == "summon":
+            hp = 14 * PIRATE_HP_MULT[self.settings["difficulty"]]
+            for k in range(2 + (1 if ph >= 2 else 0)):
+                if len(self.pirates) < MAX_PIRATES + 4:
+                    self.pirates.append(Pirate(pr.x + random.uniform(-70, 70),
+                                               pr.y + random.uniform(-70, 70), hp, "dinghy"))
+            self.float_text(pr.x, pr.y - pr.r - 40, "reinforcements!", col("#ffd23f"))
+        elif name == "sharks":
+            hp = min(60, 24 + 4 * self.score) * PIRATE_HP_MULT[self.settings["difficulty"]]
+            for k in range(2):
+                if len(self.sharks) < MAX_SHARKS:
+                    self.sharks.append(Shark(pr.x + random.uniform(-60, 60),
+                                             pr.y + random.uniform(-60, 60), hp))
+            self.float_text(pr.x, pr.y - pr.r - 40, "sharks!", col("#7ae7ff"))
+        elif name == "broadside":
+            self.fire_pirate_ability(pr, "broadside")
+        elif name == "gale":
+            self.wind_ang = math.atan2(pr.y - r.y, pr.x - r.x)   # blows you towards it
+            self.wind_str = 75.0
+            self.wind_t = 7.0
+            self.announce("A gale drags you in!", 2.5)
+        elif name == "minefield":
+            for k in range(6):
+                if len(self.hmines) >= MAX_HOSTILE_MINES:
+                    break
+                a = (k + 0.5) * math.tau / 6 + random.uniform(-0.15, 0.15)
+                self.hmines.append(HostileMine(r.x + math.cos(a) * 230,
+                                               r.y + math.sin(a) * 230, 14))
+            self.float_text(pr.x, pr.y - pr.r - 40, "mines!", col("#ff9f1c"))
+
+    def update_hazards(self, dt):
+        r = self.raft
+        dmult = PIRATE_DMG_MULT[self.settings["difficulty"]]
+        keep = []
+        for h in self.hazards:
+            h.t -= dt
+            if h.t > 0:
+                keep.append(h)
+                continue
+            if math.hypot(h.x - r.x, h.y - r.y) < h.r + r.radius * 0.6:
+                self.hurt_raft(h.dmg * dmult)
+            for _ in range(8):
+                a = random.uniform(0, math.tau)
+                self.puffs.append(Puff(h.x, h.y, math.cos(a), math.sin(a), 0.2, True))
+            self.snd.play("boom", 0.4)
+            self.add_shake(3)
+        self.hazards = keep
+
+    def update_regen(self, dt):
+        r = self.raft
+        if r.regen > 0:
+            r.hull = min(self.max_hull(), r.hull + r.regen_rate * dt)
+
     def update_hmines(self, dt):
         r = self.raft
         dmult = PIRATE_DMG_MULT[self.settings["difficulty"]]
@@ -1863,7 +2434,9 @@ class Game:
         for s in self.sharks:
             s.bite_cd -= dt
             s.hit_cd -= dt
-            s.phase += dt
+            s.slow -= dt
+            sdt = dt * (0.35 if s.slow > 0 else 1.0)
+            s.phase += sdt
             dx, dy = r.x - s.x, r.y - s.y
             d = math.hypot(dx, dy) or 1
             ux, uy = dx / d, dy / d
@@ -1871,10 +2444,10 @@ class Game:
                 tvx, tvy = ux * speed * 1.2, uy * speed * 1.2
             else:
                 tvx, tvy = -uy * speed * 0.8, ux * speed * 0.8
-            s.vx += (tvx - s.vx) * 3 * dt
-            s.vy += (tvy - s.vy) * 3 * dt
-            s.x += s.vx * dt
-            s.y += s.vy * dt
+            s.vx += (tvx - s.vx) * 3 * sdt
+            s.vy += (tvy - s.vy) * 3 * sdt
+            s.x += s.vx * sdt
+            s.y += s.vy * sdt
             sp = math.hypot(s.vx, s.vy)
             if sp > 5:
                 s.hx, s.hy = s.vx / sp, s.vy / sp
@@ -2180,7 +2753,10 @@ class Game:
 
     def pirate_colors(self, pr):
         if pr.kind == "boss":
-            return col("#2a0f1a"), col("#5a1f33"), GOLD
+            c = BOSSES[pr.boss_id]["colors"]
+            return col(c[0]), col(c[1]), col(c[2])
+        if pr.kind == "galleon":
+            return col("#3b2d05"), col("#c9a227"), col("#fff3b0")
         if pr.kind == "ram":
             return col("#2b1414"), col("#7a2a2a"), col("#140606")
         return col("#2b1d14"), col("#4a3324"), col("#140c06")
@@ -2340,6 +2916,37 @@ class Game:
         self.rect(col("#e63946"), sx - hw, sy - 4, sx - hw + 2 * hw * frac, sy + 4)
         self.rect(BLACK, sx - hw, sy - 4, sx + hw, sy + 4, 1)
 
+    def hazard_color(self, h):
+        return col({"slam": "#3ddc84", "lightning": "#ffe66d", "bomb": "#ff9f1c"}[h.kind])
+
+    def draw_hazards_2d(self):
+        for h in self.hazards:
+            sx, sy = self.to_screen(h.x, h.y)
+            c = self.hazard_color(h)
+            k = 1 - max(0.0, h.t) / h.warn
+            self.circle(c, sx, sy, h.r, 3)
+            self.circle(c, sx, sy, max(3, h.r * k), 5)
+            self.circle(c, sx, sy, 4)
+
+    def boss_label(self, pr):
+        return BOSSES[pr.boss_id]["name"] if pr.boss_id else "TREASURE GALLEON"
+
+    def draw_boss_bar(self):
+        boss = next((p for p in self.pirates if p.kind == "boss"), None)
+        if boss is None:
+            return
+        spec = BOSSES[boss.boss_id]
+        x0, x1 = 540, W - 40
+        self.text(f"{spec['name']}    phase {boss.phase + 1}/3", (x0 + x1) / 2, H - 56, 22,
+                  GOLD, "center", True)
+        self.rect(col("#222233"), x0, H - 42, x1, H - 22)
+        fr = max(0.0, boss.hp / boss.max_hp)
+        self.rect(col("#e63946") if boss.shield_t <= 0 else col("#cccccc"),
+                  x0, H - 42, x0 + (x1 - x0) * fr, H - 22)
+        for t in (1 / 3, 2 / 3):
+            self.line(BLACK, x0 + (x1 - x0) * t, H - 42, x0 + (x1 - x0) * t, H - 22, 3)
+        self.rect(WHITE, x0, H - 42, x1, H - 22, 2)
+
     def draw_hmines_2d(self):
         for m in self.hmines:
             sx, sy = self.to_screen(m.x, m.y)
@@ -2375,8 +2982,10 @@ class Game:
             self.circle(mid, sx, sy, pr.r)
             self.circle(edge, sx, sy, pr.r, 3)
             self.skull(sx, sy - 2, 13 * pr.r / 34)
-            if pr.kind == "boss":
-                self.text("FLAGSHIP", sx, sy - pr.r - 34, 22, GOLD, "center", True)
+            if pr.shield_t > 0:
+                self.circle(WHITE, sx, sy, pr.r + 10, 4)
+            if pr.kind in ("boss", "galleon"):
+                self.text(self.boss_label(pr), sx, sy - pr.r - 34, 22, GOLD, "center", True)
             self.draw_health_bar(sx, sy - pr.r - 14, max(26, pr.r * 0.8), pr.hp / pr.max_hp)
             self.pirate_tell_pips(pr, sx, sy - pr.r - (52 if pr.kind == "boss" else 30))
             if "bulwark" in pr.abil:
@@ -2388,7 +2997,7 @@ class Game:
                               pts[k + 1][0], pts[k + 1][1], 6)
             if pr.charging:
                 name, t, total = pr.charging
-                c = col(PIRATE_ABILITIES[name]["color"])
+                c = col(self.tell_color(name))
                 self.circle(c, sx, sy, pr.r + 8 + 60 * (t / total), 3)    # closing ring
                 if name == "broadside":
                     a = math.atan2(r.y - pr.y, r.x - pr.x)
@@ -2538,6 +3147,7 @@ class Game:
         self.draw_obstacles_2d()
         self.draw_mines_2d()
         self.draw_hmines_2d()
+        self.draw_hazards_2d()
         self.draw_clouds_2d()
         self.flush_fx()
         self.draw_sharks_2d()
@@ -2762,7 +3372,7 @@ class Game:
             self.line(col("#2b1d14"), base[0], base[1], top[0], top[1],
                       max(2, int(5 * base[3])))
             s = (sb[3] + st[3]) / 2
-            hw = 34 * s * (pr.r / 34 if pr.kind == "boss" else 1)
+            hw = 34 * s * (pr.r / 34 if pr.kind in ("boss", "galleon") else 1)
             self.poly([(sb[0] - hw, sb[1]), (sb[0] + hw, sb[1]),
                        (st[0] + hw * 0.7, st[1]), (st[0] - hw * 0.7, st[1])],
                       fill=col("#15151c"), outline=col("#666666"), width=2)
@@ -2771,8 +3381,8 @@ class Game:
             if hp:
                 self.draw_health_bar(hp[0], hp[1], max(26, pr.r * 0.8) * hp[3],
                                      pr.hp / pr.max_hp)
-                if pr.kind == "boss":
-                    self.text("FLAGSHIP", hp[0], hp[1] - 18, 22, GOLD, "center", True)
+                if pr.kind in ("boss", "galleon"):
+                    self.text(self.boss_label(pr), hp[0], hp[1] - 18, 22, GOLD, "center", True)
                 self.d3_tells(pr, hp)
 
     def d3_hmine(self, m):
@@ -2794,7 +3404,7 @@ class Game:
             name, t, total = pr.charging
             rad = pr.r + 8 + 60 * (t / total)
             self.poly(self.ring(pr.x, pr.y, 3, rad, 24),
-                      outline=col(PIRATE_ABILITIES[name]["color"]), width=3)
+                      outline=col(self.tell_color(name)), width=3)
         if "bulwark" in pr.abil:
             pts = []
             for k in range(9):
@@ -2958,6 +3568,11 @@ class Game:
         for sw in self.shockwaves:
             self.poly(self.ring(sw.x, sw.y, 4, max(1.0, sw.radius), 28),
                       outline=col("#ff9f1c"), width=4)
+        for h in self.hazards:
+            hc = self.hazard_color(h)
+            k = 1 - max(0.0, h.t) / h.warn
+            self.poly(self.ring(h.x, h.y, 3, h.r, 24), outline=hc, width=3)
+            self.poly(self.ring(h.x, h.y, 3, max(4.0, h.r * k), 20), outline=hc, width=4)
 
         items = []
 
@@ -3028,7 +3643,7 @@ class Game:
                       outline=BLACK, width=2)
         # arrows to flagship bosses
         for pr in self.pirates:
-            if pr.kind == "boss":
+            if pr.kind in ("boss", "galleon"):
                 pdx, pdy = pr.x - r.x, pr.y - r.y
                 if math.hypot(pdx, pdy) > 420:
                     a = self.screen_angle(pdx, pdy)
@@ -3036,7 +3651,8 @@ class Game:
                     tip = (ax + math.cos(a) * 16, ay + math.sin(a) * 16)
                     l_ = (ax + math.cos(a + 2.5) * 10, ay + math.sin(a + 2.5) * 10)
                     r_ = (ax + math.cos(a - 2.5) * 10, ay + math.sin(a - 2.5) * 10)
-                    self.poly([tip, l_, r_], fill=col("#e63946"), outline=BLACK, width=2)
+                    self.poly([tip, l_, r_], fill=GOLD if pr.kind == "galleon" else col("#e63946"),
+                              outline=BLACK, width=2)
 
         self.text(f"Islands: {self.score}    Coins: {self.coins}    "
                   f"Sunk: {self.kills}", 15, 10, 28, WHITE, "topleft", True)
@@ -3054,6 +3670,9 @@ class Game:
         if self.pirate_kills:
             self.text(f"Pirates sunk: {self.pirate_kills}", 360, 70, 20,
                       col("#ff8a80"), "midleft", True)
+        if self.skill_points:
+            self.text(f"Skill pts: {self.skill_points}", 520, 70, 20, col("#ffd23f"),
+                      "midleft", True)
 
         # wind indicator
         if self.wind_str > 0:
@@ -3071,10 +3690,16 @@ class Game:
         ey = 118
         for label, timer, color in (("BEAN BOOST", r.beans, "#e0a050"),
                                     ("TURBO", r.turbo, "#6ec5ff"),
-                                    ("SHIELD", r.shield, "#7ae7ff")):
+                                    ("SHIELD", r.shield, "#7ae7ff"),
+                                    ("HEALING", r.regen, "#80cbc4"),
+                                    ("GHOST", r.invuln - 0.5, "#e0e0e0")):
             if timer > 0:
                 self.text(f"{label} {timer:.0f}s", 15, ey, 22, col(color), "midleft", True)
                 ey += 22
+        if self.vows_equipped:
+            self.text("Vows: " + ", ".join(VOWS[v]["name"].replace("Vow of ", "")
+                                            for v in self.vows_equipped),
+                      15, ey, 18, col("#d6c6ff"), "midleft")
 
         if self.settings["hints"]:
             self.text("move   fart   ability", W - 15, 10, 18, WHITE, "topright")
@@ -3097,6 +3722,7 @@ class Game:
         else:
             self.text("TAB/M menu", W - 15, 10, 18, WHITE, "topright")
 
+        self.draw_boss_bar()
         n = len(self.players)
         for i, p in enumerate(self.players):
             y = H - 22 - (n - 1 - i) * 24
@@ -3120,6 +3746,11 @@ class Game:
         if self.banner_t > 0 and self.banner_text:
             self.text(self.banner_text, W / 2, 110, 44, GOLD, "center", True)
 
+    def shop_footer(self):
+        names = ("Upgrades", "Abilities", "Prestige", "Mastery", "Vows")
+        return (f"Q / E: page {self.shop_page + 1}/{SHOP_PAGES} ({names[self.shop_page]})"
+                f"      TAB: menu      SPACE: continue")
+
     def draw_shop_upgrades(self):
         self.panel(110, 30, W - 110, H - 25)
         self.text("UPGRADE SHOP", W / 2, 62, 46, GOLD, "center", True)
@@ -3138,8 +3769,9 @@ class Game:
             for k in range(MAX_LEVEL):
                 px = 640 + k * 18
                 self.rect(c, px, y - 7, px + 13, y + 6, 0 if k < lv else 1)
-            self.text("MAX" if maxed else f"{cost} coins", W - 140, y, 24, c,
-                      "midright", True)
+            m = self.mastery.get(u["id"], 0)
+            self.text((f"MAX  M{m}" if m else "MAX") if maxed else f"{cost} coins",
+                      W - 140, y, 24, c, "midright", True)
             y += 31
         full = self.raft.hull >= self.max_hull()
         c = col("#7a7a8c") if full else WHITE if self.coins >= REPAIR_COST else col("#a06060")
@@ -3149,13 +3781,13 @@ class Game:
                   370, y, 22, c, "midleft")
         self.text(f"{REPAIR_COST} coins", W - 140, y, 24, c, "midright", True)
         if self.prestige_unlocked():
-            self.text("All upgrades maxed!  Press E for PRESTIGE upgrades (plunder)",
+            self.text("All upgrades maxed!  Q / E for PRESTIGE, MASTERY and VOWS",
                       W / 2, y + 40, 24, GOLD, "center", True)
         else:
             self.text("Max out every upgrade to unlock the PRESTIGE page (press E)",
                       W / 2, y + 40, 22, col("#aaaaaa"), "center")
         self.text(self.shop_msg, W / 2, H - 85, 26, LIME, "center")
-        self.text("Q / E: change page      TAB: menu      SPACE: continue",
+        self.text(self.shop_footer(),
                   W / 2, H - 52, 24, WHITE, "center", True)
 
     def draw_shop_abilities(self):
@@ -3164,7 +3796,7 @@ class Game:
         self.text(f"Coins: {self.coins}      Plunder: {self.plunder}", W / 2, 98, 28, WHITE,
                   "center", True)
         y = 138
-        for i, ab in enumerate(ABILITIES):
+        for i, ab in enumerate(ABILITIES[:BASE_ABILITY_COUNT]):
             owned = i in self.owned
             afford = self.coins >= ab["cost"]
             abc = col(ab["color"])
@@ -3176,7 +3808,9 @@ class Game:
                       "midright", True)
             y += 29
         y += 8
-        self.text("Equip: every crew mate (AI too) uses its own LEFT / RIGHT keys",
+        found = sum(1 for i in range(BASE_ABILITY_COUNT, len(ABILITIES)) if i in self.owned)
+        self.text(f"Equip with LEFT / RIGHT keys.   Pirate-dropped abilities found: "
+                  f"{found}/{len(ABILITIES) - BASE_ABILITY_COUNT}",
                   140, y, 22, LIME, "midleft", True)
         y += 28
         for p in self.players:
@@ -3190,7 +3824,7 @@ class Game:
                       col("#aaaaaa"), "midleft")
             y += 25
         self.text(self.shop_msg, W / 2, H - 80, 24, LIME, "center")
-        self.text("Q / E: change page      TAB: menu      SPACE: continue",
+        self.text(self.shop_footer(),
                   W / 2, H - 50, 24, WHITE, "center", True)
 
     def draw_shop_prestige(self):
@@ -3223,10 +3857,87 @@ class Game:
             self.text("You still collect plunder from kills - it will be waiting for you.",
                       W / 2, y + 44, 20, col("#cccccc"), "center")
         self.text(self.shop_msg, W / 2, H - 85, 26, LIME, "center")
-        self.text("Q / E: change page      TAB: menu      SPACE: continue",
+        self.text(self.shop_footer(),
                   W / 2, H - 52, 24, WHITE, "center", True)
 
+    def draw_shop_mastery(self):
+        self.panel(110, 30, W - 110, H - 25)
+        self.text("MASTERY", W / 2, 62, 46, GOLD, "center", True)
+        left = self.kills_per_point() - self.sp_prog
+        self.text(f"Skill points: {self.skill_points}      next free point in {left} pirate kills",
+                  W / 2, 98, 26, col("#ffd23f"), "center", True)
+        self.text(f"[B] buy a skill point: {self.sp_cost()} coins   "
+                  f"(bought {self.sp_bought} - every purchase makes the next one dearer)",
+                  W / 2, 126, 20, WHITE if self.coins >= self.sp_cost() else col("#a06060"),
+                  "center")
+        y = 170
+        for i, u in enumerate(UPGRADES):
+            uid = u["id"]
+            m = self.mastery[uid]
+            unlocked = self.lvl(uid) >= MAX_LEVEL
+            maxed = m >= MASTERY_MAX
+            cost = self.mastery_cost(uid)
+            afford = unlocked and not maxed and self.skill_points >= cost
+            c = col("#7a7a8c") if (not unlocked or maxed) else WHITE if afford                 else col("#a06060")
+            self.text(f"[{i + 1}]", 140, y, 24, GOLD, "midleft", True)
+            self.text(u["name"], 190, y, 24, c, "midleft", True)
+            for k in range(MASTERY_MAX):
+                px = 385 + k * 16
+                self.rect(c, px, y - 7, px + 12, y + 6, 0 if k < m else 1)
+            self.text(f"+{0.5 * m:g} lvls", 560, y, 20, c, "midleft")
+            label = "LOCKED" if not unlocked else "MAX" if maxed else f"{cost} pt"
+            self.text(label, W - 140, y, 22, c, "midright", True)
+            y += 34
+        self.text("Mastery unlocks on an upgrade once it hits max level. Each rank adds half a"
+                  " level of its effect.", W / 2, y + 8, 18, col("#cccccc"), "center")
+        self.text("Points are limited - choose what to specialise in!", W / 2, y + 30, 20,
+                  LIME, "center")
+        self.text(self.shop_msg, W / 2, H - 85, 24, LIME, "center")
+        self.text(self.shop_footer(), W / 2, H - 52, 24, WHITE, "center", True)
+
+    def draw_shop_vows(self):
+        self.panel(110, 30, W - 110, H - 25)
+        self.text("VOWS", W / 2, 62, 46, GOLD, "center", True)
+        self.text(f"Sworn: {len(self.vows_equipped)}/{self.vow_slots()} slots   "
+                  f"(a 3rd slot opens when every upgrade is maxed)", W / 2, 98, 24,
+                  WHITE, "center", True)
+        y = 150
+        for i, vid in enumerate(VOW_IDS):
+            v = VOWS[vid]
+            rank = self.vow_rank.get(vid, 0)
+            on = vid in self.vows_equipped
+            c = LIME if on else WHITE if rank else col("#7a7a8c")
+            self.text(f"[{i + 1}]", 140, y, 24, GOLD, "midleft", True)
+            self.text(v["name"], 190, y, 24, c, "midleft", True)
+            for k in range(VOW_MAX_RANK):
+                self.circle(GOLD if k < rank else col("#444455"), 440 + k * 22, y, 8,
+                            0 if k < rank else 1)
+            self.text("SWORN" if on else "owned" if rank else "not found", W - 140, y, 22,
+                      c, "midright", True)
+            if rank:
+                self.text("+ " + v["good"], 190, y + 21, 18, col("#8be28b"), "midleft")
+                self.text("- " + v["bad"], 470, y + 21, 18, col("#ee6055"), "midleft")
+            else:
+                self.text("Dropped by pirates (flagships always drop one)", 190, y + 21, 18,
+                          col("#7a7a8c"), "midleft")
+            y += 44
+        self.text("Press 1-8 to swear / remove a vow. Finding a vow again raises its rank "
+                  "(stronger reward AND cost).", W / 2, y + 4, 18, col("#cccccc"), "center")
+        if self.relics:
+            rl = "Relics: " + ", ".join(RELICS[x]["name"] for x in sorted(self.relics))
+        else:
+            rl = "Relics: none yet - defeat the bosses!"
+        self.text(rl, W / 2, y + 28, 18, GOLD, "center")
+        self.text(self.shop_msg, W / 2, H - 85, 24, LIME, "center")
+        self.text(self.shop_footer(), W / 2, H - 52, 24, WHITE, "center", True)
+
     def draw_shop(self):
+        if self.shop_page == 3:
+            self.draw_shop_mastery()
+            return
+        if self.shop_page == 4:
+            self.draw_shop_vows()
+            return
         if self.shop_page == 0:
             self.draw_shop_upgrades()
         elif self.shop_page == 1:
